@@ -3,7 +3,7 @@ import 'package:flutter/services.dart';
 
 abstract final class AppTheme {
   static const Color gold = Color(0xFFE8C87A);
-  static const Color goldDeep = Color(0xFF8A6A1F);
+  static const Color goldDeep = Color(0xFF7A5C16);
   static const Color actionBlue = Color(0xFF7FB8FF);
 
   static final light = _theme(Brightness.light);
@@ -12,7 +12,7 @@ abstract final class AppTheme {
   static ThemeMode mode(String preference) => switch (preference) {
     'light' => ThemeMode.light,
     'dark' => ThemeMode.dark,
-    _ => ThemeMode.system,
+    _ => ThemeMode.dark,
   };
 
   static String label(String preference) => switch (preference) {
@@ -39,43 +39,43 @@ abstract final class AppTheme {
 
   static ThemeData _theme(Brightness brightness) {
     final dark = brightness == Brightness.dark;
-    final background = dark ? const Color(0xFF0A0A0C) : const Color(0xFFFAF8F4);
+    final background = dark ? const Color(0xFF07070A) : const Color(0xFFFAF7F0);
     final scheme = ColorScheme.fromSeed(
       seedColor: gold,
       brightness: brightness,
       primary: dark ? gold : goldDeep,
-      onPrimary: dark ? const Color(0xFF241A00) : Colors.white,
+      onPrimary: dark ? const Color(0xFF201700) : Colors.white,
       primaryContainer: dark
-          ? const Color(0xFF3A2E12)
-          : const Color(0xFFF6E7C2),
+          ? const Color(0xFF33280D)
+          : const Color(0xFFF5E5BC),
       onPrimaryContainer: dark
-          ? const Color(0xFFF6E7C2)
-          : const Color(0xFF3A2E12),
-      secondary: dark ? actionBlue : const Color(0xFF2F5C99),
+          ? const Color(0xFFF5E5BC)
+          : const Color(0xFF33280D),
+      secondary: dark ? actionBlue : const Color(0xFF2C5589),
       onSecondary: dark ? const Color(0xFF00121F) : Colors.white,
       tertiary: dark ? const Color(0xFFC9C6D2) : const Color(0xFF5A5560),
-      surface: dark ? const Color(0xFF141417) : Colors.white,
-      onSurface: dark ? const Color(0xFFEDEDF0) : const Color(0xFF1D1B16),
+      surface: dark ? const Color(0xFF121216) : Colors.white,
+      onSurface: dark ? const Color(0xFFF0EFF4) : const Color(0xFF1C1A15),
       onSurfaceVariant: dark
-          ? const Color(0xFF8A8A93)
+          ? const Color(0xFF8F8F99)
           : const Color(0xFF6B6660),
-      outline: dark ? const Color(0xFF5C5C66) : const Color(0xFF8C867D),
-      outlineVariant: dark ? const Color(0x1AFFFFFF) : const Color(0xFFE7E1D5),
+      outline: dark ? const Color(0xFF5E5E68) : const Color(0xFF8C867D),
+      outlineVariant: dark ? const Color(0x26FFFFFF) : const Color(0xFFE5DED0),
       surfaceContainerLowest: dark
-          ? const Color(0xFF070708)
-          : const Color(0xFFFFFEFC),
+          ? const Color(0xFF040406)
+          : const Color(0xFFFFFEFB),
       surfaceContainerLow: dark
-          ? const Color(0xFF111114)
-          : const Color(0xFFF6F3ED),
+          ? const Color(0xFF0F0F12)
+          : const Color(0xFFF6F2EA),
       surfaceContainer: dark
-          ? const Color(0xFF141417)
-          : const Color(0xFFF1EDE6),
+          ? const Color(0xFF121216)
+          : const Color(0xFFF0EBE1),
       surfaceContainerHigh: dark
-          ? const Color(0xFF1B1B20)
-          : const Color(0xFFEBE6DE),
+          ? const Color(0xFF1A1A1F)
+          : const Color(0xFFE9E3D8),
       surfaceContainerHighest: dark
           ? const Color(0xFF232329)
-          : const Color(0xFFE4DED4),
+          : const Color(0xFFE1DACE),
       surfaceTint: Colors.transparent,
     );
     return ThemeData(
@@ -83,6 +83,7 @@ abstract final class AppTheme {
       brightness: brightness,
       colorScheme: scheme,
       scaffoldBackgroundColor: background,
+      splashFactory: InkSparkle.splashFactory,
       appBarTheme: AppBarTheme(
         backgroundColor: background,
         foregroundColor: scheme.onSurface,
@@ -108,12 +109,12 @@ abstract final class AppTheme {
       ),
       dividerTheme: DividerThemeData(color: scheme.outlineVariant, space: 1),
       navigationBarTheme: NavigationBarThemeData(
-        backgroundColor: dark ? const Color(0xFF0D0D10) : Colors.white,
+        backgroundColor: dark ? const Color(0xFF0B0B0F) : Colors.white,
         surfaceTintColor: Colors.transparent,
         elevation: 0,
         indicatorColor: dark
-            ? const Color(0x1AE8C87A)
-            : const Color(0x1A8A6A1F),
+            ? const Color(0x22E8C87A)
+            : const Color(0x1A7A5C16),
         labelTextStyle: WidgetStateProperty.resolveWith((states) {
           final selected = states.contains(WidgetState.selected);
           return TextStyle(
