@@ -175,3 +175,11 @@ go test -race -ldflags="-X duanjuapp/native/core.buildAllSources=true" ./...
 ### 构建
 
 沿用上游 `.github/workflows/build.yml`，产物名称不变：`hongguojian-ios-unsigned` / `zhenguojian-ios-unsigned` 等。
+### 新增功能：竖向滑动刷剧（不属于上游）
+
+| 文件 | 内容 |
+| --- | --- |
+| `lib/feed_screen.dart` | 新增文件。全屏竖向 `PageView` 刷剧页：上下滑动切换剧集，单实例 `media_kit` 播放器复用，播完自动连播下一集、整剧播完自动滑到下一部；顶部分类栏（真人 / 漫剧 / AI 剧），右侧「选集 / 下一条」操作，底部播放进度条，点击画面暂停或继续，异常时原地「重试」 |
+| `lib/home_screen.dart` | 首页工具栏新增「刷剧」按钮（`ValueKey('open-feed')`），点击进入上述页面 |
+
+数据来源仍是上游已有的红果推荐流接口（`recommendations` / `detail` / `resolve`），**不新增任何请求、不改签名、不改站源解析**。
