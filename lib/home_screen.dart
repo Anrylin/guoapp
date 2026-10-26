@@ -10,7 +10,6 @@ import 'catalog_filters.dart';
 import 'catalog_browser.dart';
 import 'catalog_sort.dart';
 import 'catalog_sort_sheet.dart';
-import 'feed_screen.dart';
 import 'recommendations_screen.dart';
 import 'rankings_screen.dart';
 import 'detail_screen.dart';
@@ -337,15 +336,6 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  void _openFeed() {
-    _pauseCatalog();
-    Navigator.push<void>(
-      context,
-      MaterialPageRoute(
-        builder: (_) => FeedScreen(repository: widget.repository),
-      ),
-    );
-  }
 
   Future<void> _manageSources() async {
     _pauseCatalog();
@@ -971,7 +961,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     padding: const EdgeInsets.only(right: 2),
                     child: Center(
                       child: Text(
-                        'v0.2.80',
+                        'v0.2.81',
                         style: TextStyle(
                           fontSize: 10,
                           fontWeight: FontWeight.w800,
@@ -981,12 +971,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       ),
                     ),
                   ),
-                  IconButton(
-                    key: const ValueKey('open-feed'),
-                    tooltip: '刷剧',
-                    onPressed: _openFeed,
-                    icon: const Icon(Icons.play_circle_outline_rounded),
-                  ),
+
                   IconButton(
                     key: const ValueKey('toggle-search'),
                     tooltip: _searchVisible ? '收起搜索' : '搜索',
