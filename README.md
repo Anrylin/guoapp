@@ -129,3 +129,49 @@ go test -race -ldflags="-X duanjuapp/native/core.buildAllSources=true" ./...
 站源是 Go 原生 provider（`native/core/provider_*.go`），不是运行期加载的 Python 源。新增站源需接入：`provider_huangguo.go`（常量 / 白名单 / `canonicalProviderSource` / `GetHuangguoChapters`）、`provider_media.go`（baseURL / host 反查 / 播放分派）、`app_categories.go`、`app_cover_metadata.go`、`app_runtime.go`（Config 字段 + 目录 / 搜索 / 详情分派 + 空页放行），并在 `lib/models.dart` 登记 `SourceSite`。
 
 注意：Go RE2 正则**不支持 lookahead**。解析多线路播放列表时不能用 `(?=...)` 做分段，否则非捕获组会消耗下一段开头；应改用显式字符串截断（从容器标记之后查找下一段标记）。
+
+---
+
+## 本 Fork 的改动声明（影院黑金主题）
+
+本仓库是 `Xanerix/guoapp` 的 fork，**唯一改动是替换默认界面配色为「影院黑金 / Cinema Noir」**。
+不改站源、不改接口、不改签名、不改播放与下载逻辑；上游更新可直接合并，冲突面仅限 `lib/app_theme.dart`。
+
+### 改动文件
+
+| 文件 | 改动内容 |
+| --- | --- |
+| `lib/app_theme.dart` | 全量重写配色与圆角：种子色 `#FF664F` → `#E8C87A`（香槟金）；深色背景 `#101114` → `#0A0A0C`；卡片 `#16171B` → `#141417`；新增 CardTheme（12px 圆角 + 1px 描边、零阴影）、NavigationBarTheme（金色指示器）、胶囊按钮主题、输入框 14px 圆角与聚焦描边、SnackBar/Tooltip 圆角；AppBar 滑动时 elevation 0 → 3，标题 19px/w700/字距 -0.3 |
+| `README.md` | 增加本节声明 |
+
+### 未改动的部分
+
+- 站源列表、站源密码锁、用户管理、追剧与观看记录：保持上游原样
+- 请求签名、解析、播放地址、下载与合并：保持上游原样
+- 依赖版本、`pubspec.yaml`、构建脚本 `.github/workflows/build.yml`：未改动
+- 所有页面布局、控件结构与业务逻辑：未改动
+
+### 色板（深色）
+
+| 用途 | 色值 |
+| --- | --- |
+| 背景 | `#0A0A0C` |
+| 卡片 | `#141417` |
+| 分隔/描边 | `#FFFFFF` 10%（`#1AFFFFFF`） |
+| 主色（香槟金） | `#E8C87A` |
+| 动作蓝（次要强调） | `#7FB8FF` |
+| 主文字 | `#EDEDF0` |
+| 次要文字 | `#8A8A93` |
+
+### 色板（浅色）
+
+| 用途 | 色值 |
+| --- | --- |
+| 背景 | `#FAF8F4` |
+| 卡片 | `#FFFFFF` |
+| 主色（深金） | `#8A6A1F` |
+| 主文字 | `#1D1B16` |
+
+### 构建
+
+沿用上游 `.github/workflows/build.yml`，产物名称不变：`hongguojian-ios-unsigned` / `zhenguojian-ios-unsigned` 等。
