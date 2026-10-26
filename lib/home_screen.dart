@@ -967,6 +967,20 @@ class _HomeScreenState extends State<HomeScreen> {
                           : () => setState(() => _selectionMode = true),
                       icon: const Icon(Icons.checklist_rounded),
                     ),
+                  Padding(
+                    padding: const EdgeInsets.only(right: 2),
+                    child: Center(
+                      child: Text(
+                        'v0.2.79',
+                        style: TextStyle(
+                          fontSize: 10,
+                          fontWeight: FontWeight.w800,
+                          letterSpacing: 0.2,
+                          color: Theme.of(context).colorScheme.primary,
+                        ),
+                      ),
+                    ),
+                  ),
                   IconButton(
                     key: const ValueKey('open-feed'),
                     tooltip: '刷剧',
