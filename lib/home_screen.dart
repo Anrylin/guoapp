@@ -10,6 +10,7 @@ import 'catalog_filters.dart';
 import 'catalog_browser.dart';
 import 'catalog_sort.dart';
 import 'catalog_sort_sheet.dart';
+import 'feed_screen.dart';
 import 'recommendations_screen.dart';
 import 'rankings_screen.dart';
 import 'detail_screen.dart';
@@ -332,6 +333,16 @@ class _HomeScreenState extends State<HomeScreen> {
           store: widget.store,
           initialGroup: _group.id,
         ),
+      ),
+    );
+  }
+
+  void _openFeed() {
+    _pauseCatalog();
+    Navigator.push<void>(
+      context,
+      MaterialPageRoute(
+        builder: (_) => FeedScreen(repository: widget.repository),
       ),
     );
   }
@@ -956,6 +967,12 @@ class _HomeScreenState extends State<HomeScreen> {
                           : () => setState(() => _selectionMode = true),
                       icon: const Icon(Icons.checklist_rounded),
                     ),
+                  IconButton(
+                    key: const ValueKey('open-feed'),
+                    tooltip: '刷剧',
+                    onPressed: _openFeed,
+                    icon: const Icon(Icons.play_circle_outline_rounded),
+                  ),
                   IconButton(
                     key: const ValueKey('toggle-search'),
                     tooltip: _searchVisible ? '收起搜索' : '搜索',
