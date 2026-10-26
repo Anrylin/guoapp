@@ -971,7 +971,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     padding: const EdgeInsets.only(right: 2),
                     child: Center(
                       child: Text(
-                        'v0.2.79',
+                        'v0.2.80',
                         style: TextStyle(
                           fontSize: 10,
                           fontWeight: FontWeight.w800,
