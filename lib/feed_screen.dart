@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -39,8 +40,10 @@ class _FeedScreenState extends State<FeedScreen> {
   final _page = PageController();
   final List<_FeedItem> _items = [];
   final List<StreamSubscription<dynamic>> _subs = [];
-  late final Player _player = Player();
-  late final VideoController _controller = VideoController(_player);
+
+  Player? _player;
+  VideoController? _controller;
+  String? _playerError;
 
   String _genre = 'short_play';
   int _index = 0;
@@ -48,7 +51,7 @@ class _FeedScreenState extends State<FeedScreen> {
   bool _loading = true;
   bool _loadingMore = false;
   bool _hasMore = true;
-  bool _playing = true;
+  bool _playing = false;
   bool _busy = false;
   bool _advancing = false;
   String? _error;
@@ -59,21 +62,52 @@ class _FeedScreenState extends State<FeedScreen> {
   void initState() {
     super.initState();
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
-    _subs.add(_player.stream.playing.listen((value) {
-      if (mounted && value != _playing) setState(() => _playing = value);
-    }));
-    _subs.add(_player.stream.duration.listen((value) {
-      if (mounted) setState(() => _duration = value);
-    }));
-    _subs.add(_player.stream.position.listen((value) {
-      if (!mounted) return;
-      if ((value - _position).abs() < const Duration(milliseconds: 400)) return;
-      setState(() => _position = value);
-    }));
-    _subs.add(_player.stream.completed.listen((done) {
-      if (done && mounted) unawaited(_nextEpisode());
-    }));
+    _initPlayer();
     unawaited(_load());
+  }
+
+  void _initPlayer() {
+    try {
+      final player = Player(
+        configuration: const PlayerConfiguration(
+          bufferSize: 32 * 1024 * 1024,
+          logLevel: MPVLogLevel.error,
+        ),
+      );
+      _player = player;
+      _controller = VideoController(
+        player,
+        configuration: VideoControllerConfiguration(
+          enableHardwareAcceleration: !Platform.isIOS,
+        ),
+      );
+      _subs.add(
+        player.stream.playing.listen((value) {
+          if (mounted && value != _playing) setState(() => _playing = value);
+        }),
+      );
+      _subs.add(
+        player.stream.duration.listen((value) {
+          if (mounted) setState(() => _duration = value);
+        }),
+      );
+      _subs.add(
+        player.stream.position.listen((value) {
+          if (!mounted) return;
+          if ((value - _position).abs() < const Duration(milliseconds: 400)) {
+            return;
+          }
+          setState(() => _position = value);
+        }),
+      );
+      _subs.add(
+        player.stream.completed.listen((done) {
+          if (done && mounted) unawaited(_nextEpisode());
+        }),
+      );
+    } catch (error) {
+      _playerError = '播放器初始化失败：${_errorText(error)}';
+    }
   }
 
   @override
@@ -87,7 +121,8 @@ class _FeedScreenState extends State<FeedScreen> {
     unawaited(widget.repository.cancelPlayback());
     final session = _currentPlan?.session ?? '';
     if (session.isNotEmpty) unawaited(widget.repository.release(session));
-    unawaited(_player.dispose());
+    final player = _player;
+    if (player != null) unawaited(player.dispose());
     _page.dispose();
     super.dispose();
   }
@@ -191,11 +226,15 @@ class _FeedScreenState extends State<FeedScreen> {
   }
 
   Future<void> _play(_FeedItem item) async {
+    final player = _player;
     final plan = item.plan;
-    if (plan == null) return;
+    if (player == null || plan == null) return;
     if (mounted) setState(() => _busy = true);
     try {
-      await _player.open(Media(plan.url, httpHeaders: plan.headers), play: true);
+      await player.open(
+        Media(plan.url, httpHeaders: plan.headers),
+        play: true,
+      );
       _position = Duration.zero;
       _duration = Duration.zero;
     } catch (error) {
@@ -221,7 +260,7 @@ class _FeedScreenState extends State<FeedScreen> {
         return;
       }
       if (_hasMore) await _load(more: true);
-      if (_index + 1 < _items.length) {
+      if (_index + 1 < _items.length && _page.hasClients) {
         await _page.nextPage(
           duration: const Duration(milliseconds: 320),
           curve: Curves.easeOutCubic,
@@ -233,10 +272,12 @@ class _FeedScreenState extends State<FeedScreen> {
   }
 
   void _togglePlay() {
-    if (_player.state.playing) {
-      unawaited(_player.pause());
+    final player = _player;
+    if (player == null) return;
+    if (player.state.playing) {
+      unawaited(player.pause());
     } else {
-      unawaited(_player.play());
+      unawaited(player.play());
     }
   }
 
@@ -267,6 +308,8 @@ class _FeedScreenState extends State<FeedScreen> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final controller = _controller;
+    final blocked = _playerError != null || _player == null;
     return Scaffold(
       backgroundColor: Colors.black,
       body: SafeArea(
@@ -280,7 +323,12 @@ class _FeedScreenState extends State<FeedScreen> {
               onClose: () => Navigator.of(context).maybePop(),
             ),
             Expanded(
-              child: _loading
+              child: blocked
+                  ? _EmptyFeed(
+                      error: _playerError ?? '播放器不可用',
+                      onRetry: _initPlayer,
+                    )
+                  : _loading
                   ? const Center(child: CircularProgressIndicator())
                   : _items.isEmpty
                   ? _EmptyFeed(error: _error, onRetry: () => _load(force: true))
@@ -309,9 +357,9 @@ class _FeedScreenState extends State<FeedScreen> {
                           child: Stack(
                             fit: StackFit.expand,
                             children: [
-                              if (active)
+                              if (active && controller != null)
                                 Video(
-                                  controller: _controller,
+                                  controller: controller,
                                   controls: NoVideoControls,
                                 )
                               else
@@ -343,10 +391,17 @@ class _FeedScreenState extends State<FeedScreen> {
                               ),
                               _FeedActions(
                                 item: item,
-                                onNext: () => _page.nextPage(
-                                  duration: const Duration(milliseconds: 320),
-                                  curve: Curves.easeOutCubic,
-                                ),
+                                onNext: () {
+                                  if (!_page.hasClients) return;
+                                  unawaited(
+                                    _page.nextPage(
+                                      duration: const Duration(
+                                        milliseconds: 320,
+                                      ),
+                                      curve: Curves.easeOutCubic,
+                                    ),
+                                  );
+                                },
                               ),
                               if (active)
                                 Align(
